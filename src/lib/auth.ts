@@ -9,6 +9,7 @@ import { prisma } from "./prisma";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
@@ -30,31 +31,58 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            console.log("Auth: Missing email or password");
+            return null;
+          }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string },
+          });
 
-        if (!user || !user.password) return null;
+          if (!user) {
+            console.log("Auth: User not found for email:", credentials.email);
+            return null;
+          }
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+          if (!user.password) {
+            console.log("Auth: User has no password (OAuth-only account)");
+            return null;
+          }
 
-        if (!isValid) return null;
+          const isValid = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          );
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        };
+          if (!isValid) {
+            console.log("Auth: Invalid password for user:", user.email);
+            return null;
+          }
+
+          console.log("Auth: Login successful for:", user.email);
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          };
+        } catch (error) {
+          console.error("Auth: authorize error:", error);
+          return null;
+        }
       },
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      // Always allow credentials sign-in (bypasses adapter session creation)
+      if (account?.provider === "credentials") {
+        return true;
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -69,3 +97,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
