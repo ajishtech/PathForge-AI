@@ -36,9 +36,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ id: user.id, email: user.email }, { status: 201 });
   } catch (error) {
+    console.error("Registration error:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
-    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Registration failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

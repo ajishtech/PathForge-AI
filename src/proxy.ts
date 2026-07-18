@@ -5,7 +5,7 @@ import { getToken } from "next-auth/jwt";
 const publicRoutes = ["/", "/login", "/register"];
 const authRoutes = ["/login", "/register"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
   const isLoggedIn = !!token;
