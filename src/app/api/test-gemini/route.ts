@@ -12,7 +12,7 @@ export async function GET() {
     
     // List available models to check what the API supports
     const listResponse = await ai.models.list();
-    const models = listResponse.models?.map((m) => ({
+    const models = listResponse.page?.map((m) => ({
       name: m.name,
       displayName: m.displayName,
       supportedGenerationMethods: m.supportedGenerationMethods,
