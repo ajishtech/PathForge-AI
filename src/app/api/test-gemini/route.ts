@@ -30,8 +30,7 @@ export async function GET() {
       status: "error",
       message: error?.message || String(error),
       name: error?.name,
-      statusText: error?.statusText,
-      status: error?.status,
+      apiStatus: error?.status,
       stack: error?.stack,
     }, { status: 500 });
   }
