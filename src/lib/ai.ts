@@ -33,7 +33,7 @@ async function callAI(prompt: string, systemPrompt: string): Promise<string> {
   }
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-3.5-flash",
     contents: prompt,
     config: {
       systemInstruction: systemPrompt,
@@ -185,7 +185,7 @@ export async function chatWithAI(
     ];
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3.5-flash",
       contents,
       config: {
         systemInstruction: systemPrompt,
