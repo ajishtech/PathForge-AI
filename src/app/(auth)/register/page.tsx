@@ -26,31 +26,42 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
-    const res = await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error || "Registration failed");
+      if (!res.ok) {
+        setError(data.error || "Registration failed");
+        setLoading(false);
+        return;
+      }
+
+      const result = await signIn("credentials", {
+        email: form.email,
+        password: form.password,
+        redirect: false,
+      });
+
+      console.log("SignIn result after register:", JSON.stringify(result));
+
+      if (result?.error) {
+        setError("Account created but sign-in failed. Please log in.");
+        setLoading(false);
+      } else if (result?.ok) {
+        window.location.href = "/dashboard";
+      } else {
+        // Account was created, redirect to login
+        window.location.href = "/login";
+      }
+    } catch (err) {
+      console.error("Register exception:", err);
+      setError("An unexpected error occurred.");
       setLoading(false);
-      return;
-    }
-
-    const result = await signIn("credentials", {
-      email: form.email,
-      password: form.password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      setError("Account created but sign-in failed. Please log in.");
-      setLoading(false);
-    } else {
-      router.push("/dashboard");
     }
   }
 

@@ -21,17 +21,29 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    if (result?.error) {
-      setError("Invalid email or password");
+      console.log("SignIn result:", JSON.stringify(result));
+
+      if (result?.error) {
+        setError("Invalid email or password");
+        setLoading(false);
+      } else if (result?.ok) {
+        // Use full page navigation to ensure auth cookies are sent
+        window.location.href = "/dashboard";
+      } else {
+        setError("Sign in failed. Please try again.");
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("SignIn exception:", err);
+      setError("An unexpected error occurred.");
       setLoading(false);
-    } else {
-      router.push("/dashboard");
     }
   }
 
