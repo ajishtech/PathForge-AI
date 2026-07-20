@@ -15,7 +15,7 @@ export async function GET() {
     const models = listResponse.page?.map((m) => ({
       name: m.name,
       displayName: m.displayName,
-      supportedGenerationMethods: m.supportedGenerationMethods,
+      supportedActions: m.supportedActions,
     })) || [];
 
     return NextResponse.json({
