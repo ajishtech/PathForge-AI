@@ -10,9 +10,9 @@ export async function GET() {
   try {
     const ai = new GoogleGenAI({ apiKey });
     
-    // Test calling gemini-2.0-flash
+    // Test calling gemini-2.5-flash
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       contents: "Hello! Please reply with a short success message.",
       config: {
         maxOutputTokens: 20,
@@ -21,7 +21,7 @@ export async function GET() {
 
     return NextResponse.json({
       status: "success",
-      modelUsed: "gemini-2.0-flash",
+      modelUsed: "gemini-2.5-flash",
       response: response.text,
     });
   } catch (error: any) {
