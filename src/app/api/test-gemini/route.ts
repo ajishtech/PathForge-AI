@@ -10,19 +10,17 @@ export async function GET() {
   try {
     const ai = new GoogleGenAI({ apiKey });
     
-    // Test direct content generation
-    const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
-      contents: "Hello! This is a connection test. Please reply with 'OK'.",
-      config: {
-        maxOutputTokens: 10,
-      }
-    });
+    // List available models to check what the API supports
+    const listResponse = await ai.models.list();
+    const models = listResponse.models?.map((m) => ({
+      name: m.name,
+      displayName: m.displayName,
+      supportedGenerationMethods: m.supportedGenerationMethods,
+    })) || [];
 
     return NextResponse.json({
       status: "success",
-      modelUsed: "gemini-1.5-flash",
-      response: response.text,
+      modelsAvailable: models,
     });
   } catch (error: any) {
     console.error("Gemini diagnostics failed:", error);
