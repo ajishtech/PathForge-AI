@@ -1,8 +1,8 @@
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 import { CareerRole, ROLE_SKILLS } from "./career-data";
 
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const ai = process.env.GEMINI_API_KEY
+  ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   : null;
 
 export interface ParsedResume {
@@ -28,21 +28,21 @@ export interface InterviewQuestion {
 }
 
 async function callAI(prompt: string, systemPrompt: string): Promise<string> {
-  if (!openai) {
+  if (!ai) {
     throw new Error("NO_AI_KEY");
   }
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.7,
-    response_format: { type: "json_object" },
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+    config: {
+      systemInstruction: systemPrompt,
+      responseMimeType: "application/json",
+      temperature: 0.7,
+    },
   });
 
-  return response.choices[0]?.message?.content || "{}";
+  return response.text || "{}";
 }
 
 export async function parseResumeWithAI(text: string): Promise<ParsedResume> {
@@ -171,27 +171,32 @@ export async function chatWithAI(
 ): Promise<string> {
   const systemPrompt = `You are PathForge AI, a career mentor helping users become a ${context.careerGoal}. Their current skills: ${context.skills.join(", ")}. Be encouraging, specific, and actionable. Keep responses concise (2-3 paragraphs max).`;
 
-  if (!openai) {
+  if (!ai) {
     return getLocalChatResponse(message, context);
   }
 
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...context.history.slice(-6).map((m) => ({
-          role: m.role as "user" | "assistant",
-          content: m.content,
-        })),
-        { role: "user", content: message },
-      ],
-      temperature: 0.7,
-      max_tokens: 500,
+    const contents = [
+      ...context.history.slice(-6).map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      })),
+      { role: "user", parts: [{ text: message }] },
+    ];
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents,
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 0.7,
+        maxOutputTokens: 500,
+      },
     });
 
-    return response.choices[0]?.message?.content || getLocalChatResponse(message, context);
-  } catch {
+    return response.text || getLocalChatResponse(message, context);
+  } catch (error) {
+    console.error("Gemini Chat error:", error);
     return getLocalChatResponse(message, context);
   }
 }

@@ -72,7 +72,7 @@ GITHUB_CLIENT_ID=""
 GITHUB_CLIENT_SECRET=""
 
 # AI (optional)
-OPENAI_API_KEY=""
+GEMINI_API_KEY=""
 ```
 
 Generate `AUTH_SECRET`:
@@ -181,7 +181,7 @@ Before clicking Deploy, add these environment variables:
 | `DIRECT_URL` | Your Supabase **direct** connection string (port 5432) |
 | `AUTH_SECRET` | Output of `openssl rand -base64 32` |
 | `AUTH_URL` | Leave blank for now (update after first deploy) |
-| `OPENAI_API_KEY` | Your OpenAI key (optional) |
+| `GEMINI_API_KEY` | Your Gemini API key (optional) |
 | `GOOGLE_CLIENT_ID` | Google OAuth ID (optional) |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth secret (optional) |
 | `GITHUB_CLIENT_ID` | GitHub OAuth ID (optional) |
